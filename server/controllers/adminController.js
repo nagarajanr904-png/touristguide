@@ -26,7 +26,9 @@ exports.adminLogin = async (req, res) => {
         });
 
         if (!admin) {
-            console.log('Admin not found for username:', username);
+            console.log('--- LOGIN FAILED: Admin not found for username:', username);
+            const allAdmins = await Admin.findAll({ attributes: ['username', 'email'] });
+            console.log('Available admins in DB:', allAdmins.map(a => a.username));
             return res.status(401).json({ message: 'Invalid username or password' });
         }
 

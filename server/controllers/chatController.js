@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 exports.chatWithAI = async (req, res) => {
     try {
@@ -69,9 +69,13 @@ exports.chatWithAI = async (req, res) => {
                 const jsonResponse = JSON.parse(jsonString);
                 return res.json(jsonResponse);
             } catch (e) {
-                const logPath = path.join(__dirname, '../error.log');
-                fs.appendFileSync(logPath, `JSON Parse Error: ${e.message}\nRaw Text: ${text}\n\n`);
                 console.error("JSON Parse Error:", e);
+                try {
+                    const logPath = path.join(__dirname, '../error.log');
+                    fs.appendFileSync(logPath, `JSON Parse Error: ${e.message}\nRaw Text: ${text}\n\n`);
+                } catch (logErr) {
+                    console.error("Could not write to log file (likely read-only environment)");
+                }
 
                 // Fallback if JSON parsing fails
                 return res.json({ title: "Itinerary (Parse Error)", summary: text, days: [] });
