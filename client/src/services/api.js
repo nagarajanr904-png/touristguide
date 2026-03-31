@@ -15,7 +15,7 @@ API.interceptors.request.use((config) => {
 
 export const login = (formData) => API.post('/auth/login', formData);
 export const register = (formData) => API.post('/auth/register', formData);
-export const chatWithAI = (data) => API.post('/chat', data);
+export const planTrip = (data) => API.post('/plan-trip', data);
 export const fetchPlaces = (filters) => API.get('/places', { params: filters });
 export const fetchPlaceById = (id) => API.get(`/places/${id}`);
 export const fetchTransport = (filters) => API.get('/transport', { params: filters });

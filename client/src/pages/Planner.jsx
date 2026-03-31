@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { Calendar, MapPin, DollarSign, Users, Sparkles } from 'lucide-react';
-import { chatWithAI } from '../services/api';
+import { planTrip } from '../services/api';
 
 const Planner = () => {
     const [tripDetails, setTripDetails] = useState({
-        destination: '',
-        duration: 3,
-        budget: 'moderate',
-        travelers: 2,
-        interests: []
+        location: '',
+        mood: '',
+        time: ''
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -18,9 +16,8 @@ const Planner = () => {
         e.preventDefault();
         setIsLoading(true);
         setPlan(null);
-
         try {
-            const response = await chatWithAI({ tripDetails });
+            const response = await planTrip(tripDetails);
             setPlan(response.data);
         } catch (error) {
             console.error("Planning failed", error);
@@ -46,7 +43,7 @@ const Planner = () => {
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">Destination</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Location</label>
                             <div className="relative">
                                 <MapPin className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
                                 <input
@@ -54,39 +51,33 @@ const Planner = () => {
                                     placeholder="e.g., Paris, Tokyo, Madurai"
                                     required
                                     className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                                    value={tripDetails.destination}
-                                    onChange={(e) => setTripDetails({ ...tripDetails, destination: e.target.value })}
+                                    value={tripDetails.location}
+                                    onChange={(e) => setTripDetails({ ...tripDetails, location: e.target.value })}
                                 />
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">Duration (Days)</label>
-                                <div className="relative">
-                                    <Calendar className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                                        value={tripDetails.duration}
-                                        onChange={(e) => setTripDetails({ ...tripDetails, duration: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-2">Travelers</label>
-                                <div className="relative">
-                                    <Users className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                                        value={tripDetails.travelers}
-                                        onChange={(e) => setTripDetails({ ...tripDetails, travelers: e.target.value })}
-                                    />
-                                </div>
-                            </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Mood</label>
+                            <input
+                                type="text"
+                                placeholder="e.g., relax, adventure, spiritual"
+                                required
+                                className="w-full pl-4 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                                value={tripDetails.mood}
+                                onChange={(e) => setTripDetails({ ...tripDetails, mood: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Time (e.g., 1 day, afternoon, 3 hours)</label>
+                            <input
+                                type="text"
+                                placeholder="e.g., 1 day, afternoon, 3 hours"
+                                required
+                                className="w-full pl-4 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                                value={tripDetails.time}
+                                onChange={(e) => setTripDetails({ ...tripDetails, time: e.target.value })}
+                            />
                         </div>
 
                         <div>
@@ -115,23 +106,38 @@ const Planner = () => {
                 <div className="bg-slate-50 p-6 rounded-2xl border border-dashed border-slate-300 min-h-[400px]">
                     {plan ? (
                         <div className="space-y-6 animate-fade-in">
-                            <div className="border-b border-slate-200 pb-4">
-                                <h2 className="text-2xl font-bold text-slate-800">{plan.title}</h2>
-                                <p className="text-slate-600 mt-2">{plan.summary}</p>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2">Your AI Travel Plan</h2>
+                            <div>
+                                <h3 className="font-bold text-indigo-600">Places to Visit</h3>
+                                <ul className="list-disc ml-6">
+                                    {plan.placesToVisit && plan.placesToVisit.map((p, i) => (
+                                        <li key={i}><span className="font-semibold">{p.name}:</span> {p.description}</li>
+                                    ))}
+                                </ul>
                             </div>
-                            <div className="space-y-4">
-                                {plan.days && plan.days.map((day) => (
-                                    <div key={day.day} className="bg-white p-4 rounded-lg shadow-sm border border-slate-100">
-                                        <h3 className="font-bold text-indigo-600 mb-2">Day {day.day}</h3>
-                                        <ul className="space-y-1">
-                                            {day.activities.map((act, i) => (
-                                                <li key={i} className="text-slate-700 text-sm flex items-center gap-2">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div> {act}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                ))}
+                            <div>
+                                <h3 className="font-bold text-indigo-600">Hidden Gems</h3>
+                                <ul className="list-disc ml-6">
+                                    {plan.hiddenGems && plan.hiddenGems.map((p, i) => (
+                                        <li key={i}><span className="font-semibold">{p.name}:</span> {p.description}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-indigo-600">Food Suggestions</h3>
+                                <ul className="list-disc ml-6">
+                                    {plan.foodSuggestions && plan.foodSuggestions.map((f, i) => (
+                                        <li key={i}><span className="font-semibold">{f.name}:</span> {f.type}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-indigo-600">Travel Tips</h3>
+                                <ul className="list-disc ml-6">
+                                    {plan.travelTips && plan.travelTips.map((t, i) => (
+                                        <li key={i}>{t}</li>
+                                    ))}
+                                </ul>
                             </div>
                         </div>
                     ) : (

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, X, Bot, User as UserIcon, Loader } from 'lucide-react';
-import { chatWithAI } from '../services/api';
+
 
 const ChatBot = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -19,25 +19,13 @@ const ChatBot = () => {
         scrollToBottom();
     }, [messages, isOpen]);
 
-    const handleSend = async (e) => {
+    // Chat functionality disabled: Gemini chat API not available
+    const handleSend = (e) => {
         e.preventDefault();
         if (!input.trim()) return;
-
         const userMessage = { role: 'user', content: input };
-        setMessages(prev => [...prev, userMessage]);
+        setMessages(prev => [...prev, userMessage, { role: 'assistant', content: "Sorry, chat is currently disabled." }]);
         setInput('');
-        setIsLoading(true);
-
-        try {
-            const response = await chatWithAI({ message: input });
-            const botMessage = { role: 'assistant', content: response.data.reply || "Sorry, I couldn't understand that." };
-            setMessages(prev => [...prev, botMessage]);
-        } catch (error) {
-            console.error("Chat failed", error);
-            setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I'm having trouble connecting to the server." }]);
-        } finally {
-            setIsLoading(false);
-        }
     };
 
     return (

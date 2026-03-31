@@ -1,55 +1,83 @@
-
 import { Link } from 'react-router-dom';
-import { Map, User, LogIn, Menu, X } from 'lucide-react';
+import { Map, Menu, X, Compass, Gem, Bus, CalendarDays, Languages } from 'lucide-react';
 import { useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const user = JSON.parse(localStorage.getItem('user'));
+    const { language, setLanguage, t } = useLanguage();
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.reload();
-    };
+    const navLinks = [
+        { name: t('home'), tKey: 'home', to: '/', icon: <Map className="h-4 w-4" /> },
+        { name: t('explore'), tKey: 'explore', to: '/explore', icon: <Compass className="h-4 w-4" /> },
+        { name: t('transport'), tKey: 'transport', to: '/transport', icon: <Bus className="h-4 w-4" /> },
+        { name: t('hidden_gems'), tKey: 'hidden_gems', to: '/hidden-gems', icon: <Gem className="h-4 w-4" /> },
+        { name: t('plan_trip'), tKey: 'plan_trip', to: '/plan-trip', icon: <CalendarDays className="h-4 w-4" /> },
+    ];
+
+    const languages = [
+        { code: 'en', label: 'EN' },
+        { code: 'hi', label: 'हि' },
+        { code: 'es', label: 'ES' },
+    ];
 
     return (
-        <nav className="bg-white shadow-md sticky top-0 z-50">
-            <div className="container mx-auto px-4">
-                <div className="flex justify-between items-center h-16">
-                    <Link to="/" className="flex items-center space-x-2 text-indigo-600 font-bold text-xl">
-                        <Map className="h-8 w-8" />
-                        <span>TouristGuide.AI</span>
+        <nav className="glass sticky top-0 z-[1000] border-b border-white/20">
+            <div className="container mx-auto px-6">
+                <div className="flex justify-between items-center h-20">
+                    <Link to="/" className="flex items-center space-x-2 text-indigo-600 font-black text-2xl tracking-tighter">
+                        <div className="bg-indigo-600 p-1.5 rounded-lg text-white">
+                            <Map className="h-6 w-6" />
+                        </div>
+                        <span>TouristGD.AI</span>
                     </Link>
 
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center space-x-8">
-                        <Link to="/" className="text-slate-600 hover:text-indigo-600 font-bold text-sm uppercase tracking-wider">Home</Link>
-                        <Link to="/spots" className="text-slate-600 hover:text-indigo-600 font-bold text-sm uppercase tracking-wider">Explore</Link>
-                        <Link to="/transport" className="text-slate-600 hover:text-indigo-600 font-bold text-sm uppercase tracking-wider">Transport</Link>
-                        <Link to="/hidden-gems" className="text-slate-600 hover:text-indigo-600 font-bold text-sm uppercase tracking-wider">Hidden Gems</Link>
-                        <Link to="/planner" className="text-slate-600 hover:text-indigo-600 font-bold text-sm uppercase tracking-wider">Plan Trip</Link>
-
-                        {user ? (
-                            <div className="flex items-center space-x-4">
-                                <span className="text-slate-800 font-medium">Hello, {user.name}</span>
-                                <button onClick={handleLogout} className="bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 transition">
-                                    Logout
+                        {navLinks.map((link) => (
+                            <Link 
+                                key={link.tKey} 
+                                to={link.to} 
+                                className="text-slate-600 hover:text-indigo-600 font-bold text-xs uppercase tracking-widest flex items-center gap-1.5 transition-all hover:-translate-y-0.5"
+                            >
+                                {link.icon} {link.name}
+                            </Link>
+                        ))}
+                        
+                        {/* Language Selector */}
+                        <div className="flex items-center bg-slate-100 p-1 rounded-full border border-slate-200">
+                            {languages.map((lang) => (
+                                <button
+                                    key={lang.code}
+                                    onClick={() => setLanguage(lang.code)}
+                                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                                        language === lang.code 
+                                        ? 'bg-white text-indigo-600 shadow-sm' 
+                                        : 'text-slate-500 hover:text-slate-800'
+                                    }`}
+                                >
+                                    {lang.label}
                                 </button>
-                            </div>
-                        ) : (
-                            <div className="flex items-center space-x-4">
-                                <Link to="/login" className="text-slate-600 hover:text-indigo-600 font-medium">Login</Link>
-                                <Link to="/register" className="bg-indigo-600 text-white px-5 py-2 rounded-full hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
-                                    Sign Up
-                                </Link>
-                            </div>
-                        )}
+                            ))}
+                        </div>
                     </div>
 
                     {/* Mobile menu button */}
-                    <div className="md:hidden flex items-center">
-                        <button onClick={() => setIsOpen(!isOpen)} className="text-slate-600 hover:text-indigo-600">
+                    <div className="md:hidden flex items-center gap-4">
+                        <div className="flex items-center bg-slate-100 p-1 rounded-full scale-90">
+                            {languages.map((lang) => (
+                                <button
+                                    key={lang.code}
+                                    onClick={() => setLanguage(lang.code)}
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                        language === lang.code ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'
+                                    }`}
+                                >
+                                    {lang.label}
+                                </button>
+                            ))}
+                        </div>
+                        <button onClick={() => setIsOpen(!isOpen)} className="text-slate-600 p-2 lg:hidden">
                             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                         </button>
                     </div>
@@ -58,13 +86,19 @@ const Navbar = () => {
 
             {/* Mobile Menu */}
             {isOpen && (
-                <div className="md:hidden bg-white border-t border-slate-100 py-4">
-                    <div className="container mx-auto px-4 flex flex-col space-y-4">
-                        <Link to="/" onClick={() => setIsOpen(false)} className="text-slate-600 hover:text-indigo-600 font-medium">Home</Link>
-                        <Link to="/planner" onClick={() => setIsOpen(false)} className="text-slate-600 hover:text-indigo-600 font-medium">Trip Planner</Link>
-                        <hr />
-                        <Link to="/login" onClick={() => setIsOpen(false)} className="text-slate-600 hover:text-indigo-600 font-medium">Login</Link>
-                        <Link to="/register" onClick={() => setIsOpen(false)} className="text-indigo-600 font-medium">Sign Up</Link>
+                <div className="md:hidden glass border-t border-white/20 animate-in slide-in-from-top duration-300">
+                    <div className="px-6 py-8 flex flex-col space-y-6">
+                        {navLinks.map((link) => (
+                            <Link 
+                                key={link.tKey} 
+                                to={link.to} 
+                                onClick={() => setIsOpen(false)} 
+                                className="text-slate-800 hover:text-indigo-600 font-bold text-lg flex items-center gap-3"
+                            >
+                                <span className="bg-slate-100 p-2 rounded-xl text-slate-500">{link.icon}</span>
+                                {link.name}
+                            </Link>
+                        ))}
                     </div>
                 </div>
             )}
